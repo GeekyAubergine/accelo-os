@@ -3,6 +3,7 @@ import { exhaust } from "./core";
 export const FRICTION = 0.01;
 export const WALL_FRICTION = 0.05;
 export const BLOCK_SIZE = 24;
+export const SUBSTEPS = 1;
 
 export class Color {
   private readonly r: number;
@@ -272,108 +273,102 @@ export class GameBlob {
   }
 
   update(map: Map, dt: number): void {
-    if (
-      this.pos.x < -this.radius * 2 ||
-      this.pos.x > map.getWidth() * BLOCK_SIZE + this.radius * 2 ||
-      this.pos.y < -this.radius * 2 ||
-      this.pos.y > map.getHeight() * BLOCK_SIZE + this.radius * 2
-    ) {
-      this.state = "dead";
-      return;
-    }
-
-    const block = map.getBlockAt(this.pos);
-
-    switch (block) {
-      case BlockType.VOID:
-      case BlockType.WALL:
+    for (let i = 0; i < SUBSTEPS; i++) {
+      if (
+        this.pos.x < -this.radius * 2 ||
+        this.pos.x > map.getWidth() * BLOCK_SIZE + this.radius * 2 ||
+        this.pos.y < -this.radius * 2 ||
+        this.pos.y > map.getHeight() * BLOCK_SIZE + this.radius * 2
+      ) {
         this.state = "dead";
-        break;
-      case BlockType.AIR:
-        break;
-      case BlockType.SPLITTER:
-        break;
-      case BlockType.COLOR_CHANGE_BLUE:
-        this.color = COLORS.BLUE;
-        break;
-      case BlockType.GOAL_BLUE:
-        if (this.color === COLORS.BLUE) {
+        return;
+      }
+
+      const block = map.getBlockAt(this.pos);
+
+      switch (block) {
+        case BlockType.VOID:
+        case BlockType.WALL:
           this.state = "dead";
-        }
-        break;
-      case BlockType.GOAL_RED:
-        if (this.color === COLORS.RED) {
-          this.state = "dead";
-        }
-        break;
-      case BlockType.GOAL_YELLOW:
-        if (this.color === COLORS.YELLOW) {
-          this.state = "dead";
-        }
-        break;
-      case BlockType.GOAL_PURPLE:
-        if (this.color === COLORS.PURPLE) {
-          this.state = "dead";
-        }
-        break;
-      case BlockType.GOAL_ORANGE:
-        if (this.color === COLORS.ORANGE) {
-          this.state = "dead";
-        }
-        break;
-      case BlockType.GOAL_GREEN:
-        if (this.color === COLORS.GREEN) {
-          this.state = "dead";
-        }
-        break;
-      default:
-        exhaust(block);
+          break;
+        case BlockType.AIR:
+          break;
+        case BlockType.SPLITTER:
+          break;
+        case BlockType.COLOR_CHANGE_BLUE:
+          this.color = COLORS.BLUE;
+          break;
+        case BlockType.GOAL_BLUE:
+          if (this.color === COLORS.BLUE) {
+            this.state = "dead";
+          }
+          break;
+        case BlockType.GOAL_RED:
+          if (this.color === COLORS.RED) {
+            this.state = "dead";
+          }
+          break;
+        case BlockType.GOAL_YELLOW:
+          if (this.color === COLORS.YELLOW) {
+            this.state = "dead";
+          }
+          break;
+        case BlockType.GOAL_PURPLE:
+          if (this.color === COLORS.PURPLE) {
+            this.state = "dead";
+          }
+          break;
+        case BlockType.GOAL_ORANGE:
+          if (this.color === COLORS.ORANGE) {
+            this.state = "dead";
+          }
+          break;
+        case BlockType.GOAL_GREEN:
+          if (this.color === COLORS.GREEN) {
+            this.state = "dead";
+          }
+          break;
+        default:
+          exhaust(block);
+      }
+
+      if (block === BlockType.VOID || block === BlockType.WALL) {
+        this.state = "dead";
+        return;
+      }
+
+      console.log(block);
+
+      const nextPos = this.pos.add(this.vel.scale(dt / SUBSTEPS));
+
+      const top = map.getBlockAt(nextPos.add(new Vec2(0, -this.radius + 1)));
+
+      if (top === BlockType.VOID || top === BlockType.WALL) {
+        this.vel = new Vec2(this.vel.x, Math.max(0, this.vel.y));
+      }
+
+      const bottom = map.getBlockAt(nextPos.add(new Vec2(0, this.radius - 1)));
+
+      if (bottom === BlockType.VOID || bottom === BlockType.WALL) {
+        this.vel = new Vec2(this.vel.x, Math.min(0, this.vel.y));
+      }
+
+      const left = map.getBlockAt(nextPos.add(new Vec2(-this.radius + 1, 0)));
+
+      if (left === BlockType.VOID || left === BlockType.WALL) {
+        this.vel = new Vec2(Math.max(0, this.vel.x), this.vel.y);
+      }
+
+      const right = map.getBlockAt(nextPos.add(new Vec2(this.radius - 1, 0)));
+
+      if (right === BlockType.VOID || right === BlockType.WALL) {
+        this.vel = new Vec2(Math.min(0, this.vel.x), this.vel.y);
+      }
+
+      this.pos = this.pos.add(this.vel.scale(dt / SUBSTEPS));
+
+      this.vel = this.vel.scale(1 - FRICTION);
     }
-
-    if (block === BlockType.VOID || block === BlockType.WALL) {
-      this.state = "dead";
-      return;
-    }
-
-    console.log(block);
-
-    const nextPos = this.pos.add(this.vel.scale(dt));
-
-    const topBlock = map.getBlockAt(
-      new Vec2(nextPos.x, nextPos.y - this.radius)
-    );
-
-    if (topBlock === BlockType.WALL) {
-      this.vel = new Vec2(this.vel.x * (1 - WALL_FRICTION), 0);
-    }
-
-    const bottomBlock = map.getBlockAt(
-      new Vec2(nextPos.x, nextPos.y + this.radius)
-    );
-
-    if (bottomBlock === BlockType.WALL) {
-      this.vel = new Vec2(this.vel.x * (1 - WALL_FRICTION), 0);
-    }
-
-    const leftBlock = map.getBlockAt(
-      new Vec2(nextPos.x - this.radius, nextPos.y)
-    );
-
-    if (leftBlock === BlockType.WALL) {
-      this.vel = new Vec2(0, this.vel.y * (1 - WALL_FRICTION));
-    }
-
-    const rightBlock = map.getBlockAt(
-      new Vec2(nextPos.x + this.radius, nextPos.y)
-    );
-
-    if (rightBlock === BlockType.WALL) {
-      this.vel = new Vec2(0, this.vel.y * (1 - WALL_FRICTION));
-    }
-
-    this.pos = this.pos.add(this.vel.scale(dt));
-
-    this.vel = this.vel.scale(1 - FRICTION);
   }
 
   static default(map: Map): GameBlob {

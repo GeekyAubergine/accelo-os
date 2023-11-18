@@ -3,7 +3,7 @@ import { WSMessage } from "../types";
 const host = "0.0.0.0";
 const port = 3000;
 
-const sockets: WebSocket[] = [];
+const sockets: Record<string, WebSocket> = {};
 
 Bun.serve<WSMessage>({
   hostname: host,
@@ -21,15 +21,20 @@ Bun.serve<WSMessage>({
   websocket: {
     open(ws) {
       console.debug(`Client connected: ${ws.data.id}`);
-      sockets.push(ws);
+      sockets[ws.data.id] = ws;
     },
     message: (ws, message) => {
       console.debug(`Message from client: ${ws.data.id}`);
-      console.debug(message);
+      Object.keys(sockets).forEach((key) => {
+        if (key !== ws.data.id) {
+          sockets[key].send(message);
+          console.debug(`Sending message to client: ${key}`);
+        }
+      });
     },
     close(ws) {
       console.debug(`Closing connection with client: ${ws.data.id}`);
-      sockets.splice(sockets.indexOf(ws), 1);
+      delete sockets[ws.data.id];
     },
   },
 });

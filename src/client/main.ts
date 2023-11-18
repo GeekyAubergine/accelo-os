@@ -6,18 +6,13 @@ import "./style.css";
 const socket = new WebSocket("ws://172.20.10.3:3000");
 let socketOpen = false;
 
-function handleMotionEvent(event) {
-  const x = event.accelerationIncludingGravity.x;
-  const y = event.accelerationIncludingGravity.y;
-  const z = event.accelerationIncludingGravity.z;
+const GYRO_MULT = 0.2;
 
-  console.log(x, y, z);
-  // Do something awesome.
-
-  window.alert(`${x}, ${y}, ${z}`);
-}
-
-window.addEventListener("devicemotion", handleMotionEvent, true);
+let gyro: { x: number; y: number; z: number } = {
+  x: 0,
+  y: 0,
+  z: 0,
+};
 
 // Connection opened
 socket.addEventListener("open", (event) => {
@@ -28,7 +23,14 @@ socket.addEventListener("open", (event) => {
 
 // Listen for messages
 socket.addEventListener("message", (event) => {
-  console.log("Message from server ", event.data);
+  const d = JSON.parse(event.data);
+  if (d.type === "gyro") {
+    gyro = {
+      x: d.x * GYRO_MULT,
+      y: d.y * GYRO_MULT,
+      z: d.z * GYRO_MULT,
+    };
+  }
 });
 
 const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
@@ -122,7 +124,8 @@ function tick() {
     forceY += 10;
   }
 
-  game.setGravity(new Vec2(forceX, forceY));
+  // game.setGravity(new Vec2(forceX, forceY));
+  game.setGravity(new Vec2(gyro.y, gyro.x));
 
   // if (socketOpen) {
   //   socket.send(JSON.stringify({ forceX, forceY }));
