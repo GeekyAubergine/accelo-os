@@ -5,6 +5,13 @@ export const WALL_FRICTION = 0.05;
 export const BLOCK_SIZE = 24;
 export const SUBSTEPS = 1;
 
+export type GameEventColorCollected = {
+  type: "color-collected";
+  color: Color;
+};
+
+export type GameEvent = GameEventColorCollected;
+
 export class Color {
   private readonly r: number;
   private readonly g: number;
@@ -49,7 +56,7 @@ export const COLORS = {
   GREEN: new Color(0.3, 0.7, 0.3),
   YELLOW: new Color(0.9, 0.9, 0.3),
   ORANGE: new Color(0.9, 0.6, 0.2),
-};
+} as const;
 
 export class Vec2 {
   readonly x: number;
@@ -142,7 +149,7 @@ export class Map {
 
     map.setBlock(0, 2, BlockType.GOAL_PURPLE);
     map.setBlock(2, 2, BlockType.AIR);
-    map.setBlock(12,2, BlockType.AIR);
+    map.setBlock(12, 2, BlockType.AIR);
     map.setBlock(13, 2, BlockType.GOAL_ORANGE);
     map.setBlock(14, 2, BlockType.AIR);
     map.setBlock(15, 2, BlockType.AIR);
@@ -192,9 +199,11 @@ export class Map {
     map.setBlock(9, 9, BlockType.AIR);
 
     map.setBlock(2, 10, BlockType.AIR);
+    map.setBlock(6, 10, BlockType.AIR);
     map.setBlock(7, 10, BlockType.AIR);
     map.setBlock(8, 10, BlockType.AIR);
     map.setBlock(9, 10, BlockType.AIR);
+    map.setBlock(10, 10, BlockType.AIR);
 
     map.setBlock(0, 11, BlockType.AIR);
     map.setBlock(1, 11, BlockType.AIR);
@@ -204,6 +213,7 @@ export class Map {
     map.setBlock(5, 11, BlockType.AIR);
     map.setBlock(6, 11, BlockType.AIR);
     map.setBlock(7, 11, BlockType.AIR);
+    // map.setBlock(8, 11, BlockType.SPLITTER);
     map.setBlock(8, 11, BlockType.AIR);
     map.setBlock(9, 11, BlockType.AIR);
     map.setBlock(10, 11, BlockType.AIR);
@@ -215,9 +225,11 @@ export class Map {
     map.setBlock(16, 11, BlockType.AIR);
 
     map.setBlock(2, 12, BlockType.AIR);
+    map.setBlock(6, 12, BlockType.AIR);
     map.setBlock(7, 12, BlockType.AIR);
     map.setBlock(8, 12, BlockType.AIR);
     map.setBlock(9, 12, BlockType.AIR);
+    map.setBlock(10, 12, BlockType.AIR);
     map.setBlock(13, 12, BlockType.AIR);
     map.setBlock(14, 12, BlockType.AIR);
 
@@ -299,6 +311,8 @@ export class GameBlob {
   private color: Color;
   private state: BlobState = "alive";
 
+  private lastSplit: number = Date.now();
+
   constructor(pos: Vec2, radius: number, color: Color) {
     this.pos = pos;
     this.vel = new Vec2(0, 0);
@@ -310,7 +324,12 @@ export class GameBlob {
     this.vel = this.vel.add(force);
   }
 
-  update(map: Map, dt: number): void {
+  update(map: Map, dt: number, game: Game): GameEvent[] {
+    const events: GameEvent[] = [];
+
+    const now = Date.now();
+    const secondsSinceLastSplit = (now - this.lastSplit) / 1000;
+
     for (let i = 0; i < SUBSTEPS; i++) {
       if (
         this.pos.x < -this.radius * 2 ||
@@ -319,7 +338,7 @@ export class GameBlob {
         this.pos.y > map.getHeight() * BLOCK_SIZE + this.radius * 2
       ) {
         this.state = "dead";
-        return;
+        return events;
       }
 
       const block = map.getBlockAt(this.pos);
@@ -336,41 +355,111 @@ export class GameBlob {
         case BlockType.GOAL_BLUE:
           if (this.color === COLORS.BLUE) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.GOAL_RED:
           if (this.color === COLORS.RED) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.GOAL_YELLOW:
           if (this.color === COLORS.YELLOW) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.GOAL_PURPLE:
           if (this.color === COLORS.PURPLE) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.GOAL_ORANGE:
           if (this.color === COLORS.ORANGE) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.GOAL_GREEN:
           if (this.color === COLORS.GREEN) {
             this.state = "dead";
+            events.push({
+              type: "color-collected",
+              color: this.color,
+            });
           }
           break;
         case BlockType.COLOR_CHANGE_BLUE:
-          this.color = COLORS.BLUE;
+          switch (this.color) {
+            case COLORS.WHITE:
+              this.color = COLORS.BLUE;
+              break;
+            case COLORS.RED:
+              this.color = COLORS.PURPLE;
+              break;
+            case COLORS.YELLOW:
+              this.color = COLORS.GREEN;
+              break;
+            case COLORS.BLUE:
+            case COLORS.PURPLE:
+            case COLORS.GREEN:
+            case COLORS.ORANGE:
+              break;
+          }
           break;
         case BlockType.COLOR_CHANGE_RED:
-          this.color = COLORS.RED;
+          switch (this.color) {
+            case COLORS.WHITE:
+              this.color = COLORS.RED;
+              break;
+              break;
+            case COLORS.YELLOW:
+              this.color = COLORS.ORANGE;
+              break;
+            case COLORS.BLUE:
+              this.color = COLORS.PURPLE;
+              break;
+            case COLORS.RED:
+            case COLORS.PURPLE:
+            case COLORS.GREEN:
+            case COLORS.ORANGE:
+              break;
+          }
           break;
         case BlockType.COLOR_CHANGE_YELLOW:
-          this.color = COLORS.YELLOW;
+          switch (this.color) {
+            case COLORS.WHITE:
+              this.color = COLORS.YELLOW;
+              break;
+            case COLORS.BLUE:
+              this.color = COLORS.GREEN;
+              break;
+            case COLORS.RED:
+              this.color = COLORS.ORANGE;
+              break;
+            case COLORS.YELLOW:
+            case COLORS.PURPLE:
+            case COLORS.GREEN:
+            case COLORS.ORANGE:
+              break;
+          }
           break;
         default:
           exhaust(block);
@@ -378,7 +467,7 @@ export class GameBlob {
 
       if (block === BlockType.VOID || block === BlockType.WALL) {
         this.state = "dead";
-        return;
+        return events;
       }
 
       const nextPos = this.pos.add(this.vel.scale(dt / SUBSTEPS));
@@ -413,6 +502,8 @@ export class GameBlob {
 
       this.vel = this.vel.scale(1 - FRICTION);
     }
+
+    return events;
   }
 
   static default(map: Map): GameBlob {
@@ -456,7 +547,7 @@ export class Game {
   update(dt: number): void {
     for (const blob of this.blobs) {
       blob.applyForce(this.gravity);
-      blob.update(this.map, dt);
+      blob.update(this.map, dt, this);
     }
 
     this.blobs = this.blobs.filter((blob) => blob.getState() === "alive");
@@ -468,6 +559,10 @@ export class Game {
 
   resetBlobs(): void {
     this.blobs = [GameBlob.default(this.map)];
+  }
+
+  addBlob(blob: GameBlob): void {
+    this.blobs.push(blob);
   }
 
   setGravity(gravity: Vec2): void {

@@ -94,8 +94,13 @@ export class Renderer {
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
       case BlockType.SPLITTER:
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "white";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        // Write letter S
+        ctx.fillStyle = "black";
+        ctx.font = "16px sans-serif";
+        ctx.fillText("S", 6, 17);
+
         break;
       case BlockType.GOAL_PURPLE:
         ctx.fillStyle = COLORS.PURPLE.asHex();
