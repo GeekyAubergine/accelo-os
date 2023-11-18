@@ -1,5 +1,6 @@
 import { Game, Vec2 } from "./game";
 import { Input } from "./input";
+import { OS } from "./os";
 import { Renderer } from "./renderer";
 import "./style.css";
 
@@ -38,6 +39,7 @@ const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
 let renderer: Renderer | null = null;
 let game: Game | null = null;
 let input: Input | null = null;
+let os: OS | null = null;
 
 function onWindowResize() {
   if (!canvas) {
@@ -67,6 +69,8 @@ async function initialize(): Promise<void> {
   input = new Input();
 
   input.init();
+
+  os = new OS();
 
   // const g = new Game(renderer);
 
@@ -100,7 +104,7 @@ function tick() {
   //   return;
   // }
 
-  if (!renderer || !game || !input) {
+  if (!renderer || !game || !input || !os) {
     window.requestAnimationFrame(tick);
     return;
   }
@@ -131,9 +135,13 @@ function tick() {
   //   socket.send(JSON.stringify({ forceX, forceY }));
   // }
 
-  game.update(dt);
+  const events = game.update(dt);
 
-  renderer.render(game);
+  events.forEach((event) => {
+    os?.onEvent(event);
+  });
+
+  renderer.render(game, os);
 
   lastTick = Date.now() / 1000;
 

@@ -8,6 +8,7 @@ import {
   COLORS,
 } from "./game";
 import { exhaust } from "./core";
+import { OS, OsState } from "./os";
 
 export class Renderer {
   readonly canvas: HTMLCanvasElement;
@@ -18,7 +19,7 @@ export class Renderer {
     this.ctx = canvas.getContext("2d")!;
   }
 
-  render(game: Game) {
+  render(game: Game, os: OS) {
     const { ctx } = this;
 
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -27,6 +28,29 @@ export class Renderer {
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.renderGame(game);
+
+    this.renderOsState(os.getState());
+  }
+
+  renderOsState(state: OsState) {
+    const { ctx } = this;
+
+    ctx.save();
+
+    ctx.translate(0, 0);
+
+    ctx.fillStyle = "white";
+    ctx.font = "60px sans-serif";
+
+    ctx.fillText(state.name, 20, 60);
+
+    ctx.font = "30px sans-serif";
+
+    state.options.forEach((option, i) => {
+      ctx.fillStyle = option.color.asHex();
+
+      ctx.fillText(option.name, 40, 120 + i * 50);
+    });
   }
 
   renderGame(game: Game) {

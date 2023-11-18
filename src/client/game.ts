@@ -264,16 +264,12 @@ export class Map {
   }
 
   getBlockAt(pos: Vec2): BlockType {
-    console.log({ pos });
-
     const x = Math.floor(pos.x / BLOCK_SIZE);
     const y = Math.floor(pos.y / BLOCK_SIZE);
 
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
       return BlockType.VOID;
     }
-
-    console.log({ x, y });
 
     return this.getBlock(x, y) ?? BlockType.VOID;
   }
@@ -486,8 +482,6 @@ export class GameBlob {
 
       const left = map.getBlockAt(nextPos.add(new Vec2(-this.radius + 1, 0)));
 
-      console.log({ left });
-
       if (left === BlockType.WALL) {
         this.vel = new Vec2(Math.max(0, this.vel.x), this.vel.y);
       }
@@ -544,10 +538,13 @@ export class Game {
     this.blobs = [GameBlob.default(this.map)];
   }
 
-  update(dt: number): void {
+  update(dt: number): GameEvent[] {
+    const events: GameEvent[] = [];
     for (const blob of this.blobs) {
       blob.applyForce(this.gravity);
-      blob.update(this.map, dt, this);
+      const e = blob.update(this.map, dt, this);
+
+      events.push(...e);
     }
 
     this.blobs = this.blobs.filter((blob) => blob.getState() === "alive");
@@ -555,6 +552,8 @@ export class Game {
     if (this.blobs.length === 0) {
       this.resetBlobs();
     }
+
+    return events;
   }
 
   resetBlobs(): void {
