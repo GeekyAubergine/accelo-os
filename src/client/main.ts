@@ -6,6 +6,13 @@ import "./style.css";
 
 const socket = new WebSocket("ws://172.20.10.3:3000");
 let socketOpen = false;
+let keyboardMode = true;
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "i") {
+    keyboardMode = !keyboardMode;
+  }
+});
 
 const GYRO_MULT = 0.2;
 
@@ -128,8 +135,11 @@ function tick() {
     forceY += 10;
   }
 
-  game.setGravity(new Vec2(forceX, forceY));
-  // game.setGravity(new Vec2(gyro.y, gyro.x));
+  if (keyboardMode) {
+    game.setGravity(new Vec2(forceX, forceY));
+  } else {
+    game.setGravity(new Vec2(gyro.y, gyro.x));
+  }
 
   // if (socketOpen) {
   //   socket.send(JSON.stringify({ forceX, forceY }));
