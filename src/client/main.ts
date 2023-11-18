@@ -1,4 +1,5 @@
 import { Game, Vec2 } from "./game";
+import { Input } from "./input";
 import { Renderer } from "./renderer";
 import "./style.css";
 
@@ -6,6 +7,7 @@ const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
 
 let renderer: Renderer | null = null;
 let game: Game | null = null;
+let input: Input | null = null;
 
 function onWindowResize() {
   if (!canvas) {
@@ -28,9 +30,13 @@ async function initializeRenderer(): Promise<Renderer> {
 
 async function initialize(): Promise<void> {
   renderer = await initializeRenderer();
-  game = new Game();
 
+  game = new Game();
   game.setGravity(new Vec2(0, 2));
+
+  input = new Input();
+
+  input.init();
 
   // const g = new Game(renderer);
 
@@ -64,10 +70,31 @@ function tick() {
   //   return;
   // }
 
-  if (!renderer || !game) {
+  if (!renderer || !game || !input) {
     window.requestAnimationFrame(tick);
     return;
   }
+
+  let forceX = 0;
+  let forceY = 0;
+
+  if (input.isKeyDown("ArrowLeft")) {
+    forceX -= 10;
+  }
+
+  if (input.isKeyDown("ArrowRight")) {
+    forceX += 10;
+  }
+
+  if (input.isKeyDown("ArrowUp")) {
+    forceY -= 10;
+  }
+
+  if (input.isKeyDown("ArrowDown")) {
+    forceY += 10;
+  }
+
+  game.setGravity(new Vec2(forceX, forceY));
 
   game.update(dt);
 

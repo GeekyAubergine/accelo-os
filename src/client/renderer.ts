@@ -1,4 +1,6 @@
-import { GameBlob as GameBlob, Game } from "./game";
+import { Block } from "typescript";
+import { GameBlob as GameBlob, Game, Map, BlockType, BLOCK_SIZE } from "./game";
+import { exhaust } from "./core";
 
 export class Renderer {
   readonly canvas: HTMLCanvasElement;
@@ -32,15 +34,64 @@ export class Renderer {
       this.canvas.height
     );
 
-    // Set 0,0 to center of screen
-
     ctx.save();
 
     ctx.translate(this.canvas.width * 0.75, this.canvas.height / 2);
 
+    const map = game.getMap();
+
+    ctx.translate(map.getXOffset(), map.getYOffset());
+
+    this.renderMap(game.getMap());
+
     game.getBlobs().forEach((blob) => this.renderBlob(blob));
 
     ctx.restore();
+  }
+
+  renderMap(map: Map) {
+    const { ctx } = this;
+
+    ctx.save();
+
+    for (let y = 0; y < map.getHeight(); y++) {
+      for (let x = 0; x < map.getWidth(); x++) {
+        const block = map.getBlock(x, y);
+        ctx.save();
+
+        ctx.translate(x * BLOCK_SIZE, y * BLOCK_SIZE);
+
+        this.renderBlock(block);
+
+        ctx.restore();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  renderBlock(blockType: BlockType) {
+    const { ctx } = this;
+
+    switch (blockType) {
+      case BlockType.VOID:
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.AIR:
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.WALL:
+        ctx.fillStyle = "#222222";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.SPLITTER:
+        ctx.fillStyle = "red";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      default:
+        exhaust(blockType);
+    }
   }
 
   renderBlob(blob: GameBlob) {
@@ -49,8 +100,6 @@ export class Renderer {
     const pos = blob.getPos();
     const radius = blob.getRadius();
     const color = blob.getColor().asHex();
-
-    console.log({ pos, radius, color });
 
     ctx.fillStyle = color;
 
