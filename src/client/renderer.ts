@@ -89,16 +89,46 @@ export class Renderer {
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
       case BlockType.WALL:
-        ctx.fillStyle = "#222222";
+        ctx.fillStyle = "#282828";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
       case BlockType.SPLITTER:
         ctx.fillStyle = "red";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
-      case BlockType.COLOR_CHANGE_BLUE:
+      case BlockType.GOAL_PURPLE:
+        ctx.fillStyle = COLORS.PURPLE.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.GOAL_GREEN:
+        ctx.fillStyle = COLORS.GREEN.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.GOAL_YELLOW:
+        ctx.fillStyle = COLORS.YELLOW.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.GOAL_RED:
+        ctx.fillStyle = COLORS.RED.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.GOAL_ORANGE:
+        ctx.fillStyle = COLORS.ORANGE.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+      case BlockType.GOAL_BLUE:
         ctx.fillStyle = COLORS.BLUE.asHex();
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
+
+      case BlockType.COLOR_CHANGE_BLUE:
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        ctx.fillStyle = COLORS.BLUE.asHex();
+        // Circle
+        ctx.beginPath();
+        ctx.arc(BLOCK_SIZE / 2, BLOCK_SIZE / 2, BLOCK_SIZE / 2, 0, 2 * Math.PI);
+        ctx.fill();
         break;
       default:
         exhaust(blockType);
@@ -113,7 +143,7 @@ export class Renderer {
     const color = blob.getColor().asHex();
 
     ctx.fillStyle = color;
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = "black";
 
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);

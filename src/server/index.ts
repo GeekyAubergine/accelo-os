@@ -1,21 +1,41 @@
-const server = Bun.serve<{ authToken: string }>({
-    fetch(req, server) {
-      const success = server.upgrade(req);
-      if (success) {
-        // Bun automatically returns a 101 Switching Protocols
-        // if the upgrade succeeds
-        return undefined;
-      }
-  
-      // handle HTTP request normally
-      return new Response("Hello world!");
+import { WSMessage } from "../types";
+
+const host = "0.0.0.0";
+const port = 3000;
+
+const sockets: WebSocket[] = [];
+
+Bun.serve<WSMessage>({
+  hostname: host,
+  port: port,
+  fetch: (req, server) => {
+    const clientId = crypto.randomUUID();
+    server.upgrade(req, {
+      data: {
+        id: clientId,
+        createdAt: Date(),
+      },
+    });
+    return new Response("Upgrade Failed", { status: 500 });
+  },
+  websocket: {
+    open(ws) {
+      console.debug(`Client connected: ${ws.data.id}`);
+      sockets.push(ws);
     },
-    websocket: {
-        message(ws, message) {}, // a message is received
-        open(ws) {}, // a socket is opened
-        close(ws, code, message) {}, // a socket is closed
-        drain(ws) {}, // the socket is ready to receive more data
+    message: (ws, message) => {
+      console.debug(`Message from client: ${ws.data.id}`);
+      console.debug(message);
     },
-  });
-  
-  console.log(`Listening on localhost:\${server.port}`);
+    close(ws) {
+      console.debug(`Closing connection with client: ${ws.data.id}`);
+      sockets.splice(sockets.indexOf(ws), 1);
+    },
+  },
+});
+
+process.on("beforeExit", () => {
+  manager.close();
+});
+
+console.debug(`Listening on ws://${host}:${port}`);

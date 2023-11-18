@@ -3,6 +3,34 @@ import { Input } from "./input";
 import { Renderer } from "./renderer";
 import "./style.css";
 
+const socket = new WebSocket("ws://172.20.10.3:3000");
+let socketOpen = false;
+
+function handleMotionEvent(event) {
+  const x = event.accelerationIncludingGravity.x;
+  const y = event.accelerationIncludingGravity.y;
+  const z = event.accelerationIncludingGravity.z;
+
+  console.log(x, y, z);
+  // Do something awesome.
+
+  window.alert(`${x}, ${y}, ${z}`);
+}
+
+window.addEventListener("devicemotion", handleMotionEvent, true);
+
+// Connection opened
+socket.addEventListener("open", (event) => {
+  // alert("Connected to server");
+  socket.send("Hello Server!");
+  socketOpen = true;
+});
+
+// Listen for messages
+socket.addEventListener("message", (event) => {
+  console.log("Message from server ", event.data);
+});
+
 const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
 
 let renderer: Renderer | null = null;
@@ -95,6 +123,10 @@ function tick() {
   }
 
   game.setGravity(new Vec2(forceX, forceY));
+
+  // if (socketOpen) {
+  //   socket.send(JSON.stringify({ forceX, forceY }));
+  // }
 
   game.update(dt);
 

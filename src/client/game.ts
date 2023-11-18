@@ -44,6 +44,10 @@ export const COLORS = {
   WHITE: new Color(1, 1, 1),
   RED: new Color(1, 0.2, 0.2),
   BLUE: new Color(0.3, 0.3, 0.9),
+  PURPLE: new Color(0.7, 0.3, 0.7),
+  GREEN: new Color(0.3, 0.7, 0.3),
+  YELLOW: new Color(0.7, 0.7, 0.3),
+  ORANGE: new Color(0.7, 0.5, 0.3),
 };
 
 export class Vec2 {
@@ -89,7 +93,13 @@ export const BlockType = {
   WALL: 1,
   AIR: 2,
   SPLITTER: 3,
-  COLOR_CHANGE_BLUE: 4,
+  GOAL_RED: 4,
+  GOAL_BLUE: 5,
+  GOAL_YELLOW: 6,
+  GOAL_PURPLE: 7,
+  GOAL_ORANGE: 8,
+  GOAL_GREEN: 9,
+  COLOR_CHANGE_BLUE: 10,
 } as const;
 export type BlockType = (typeof BlockType)[keyof typeof BlockType];
 
@@ -113,12 +123,95 @@ export class Map {
   static default(): Map {
     const map = new Map(17, 17);
 
+    map.setBlock(0, 0, BlockType.AIR);
+    map.setBlock(1, 0, BlockType.AIR);
+    map.setBlock(2, 0, BlockType.AIR);
+
+    map.setBlock(0, 1, BlockType.AIR);
+    map.setBlock(1, 1, BlockType.AIR);
+    map.setBlock(2, 1, BlockType.AIR);
+
+    map.setBlock(0, 2, BlockType.GOAL_PURPLE);
+    map.setBlock(2, 2, BlockType.AIR);
+
+    map.setBlock(2, 3, BlockType.AIR);
+
+    map.setBlock(5, 3, BlockType.GOAL_RED);
+
+    map.setBlock(2, 4, BlockType.AIR);
+
+    map.setBlock(0, 5, BlockType.AIR);
+    map.setBlock(1, 5, BlockType.AIR);
+    map.setBlock(2, 5, BlockType.AIR);
+
+    map.setBlock(2, 6, BlockType.AIR);
+    map.setBlock(2, 7, BlockType.AIR);
+
+    map.setBlock(2, 8, BlockType.AIR);
     map.setBlock(8, 8, BlockType.AIR);
     map.setBlock(9, 8, BlockType.AIR);
     map.setBlock(10, 8, BlockType.AIR);
     map.setBlock(11, 8, BlockType.AIR);
 
     map.setBlock(12, 8, BlockType.COLOR_CHANGE_BLUE);
+
+    map.setBlock(2, 9, BlockType.AIR);
+    map.setBlock(7, 9, BlockType.AIR);
+    map.setBlock(8, 9, BlockType.AIR);
+    map.setBlock(9, 9, BlockType.AIR);
+
+    map.setBlock(2, 10, BlockType.AIR);
+    map.setBlock(7, 10, BlockType.AIR);
+    map.setBlock(8, 10, BlockType.AIR);
+    map.setBlock(9, 10, BlockType.AIR);
+
+    map.setBlock(0, 11, BlockType.AIR);
+    map.setBlock(1, 11, BlockType.AIR);
+    map.setBlock(2, 11, BlockType.AIR);
+    map.setBlock(3, 11, BlockType.AIR);
+    map.setBlock(4, 11, BlockType.AIR);
+    map.setBlock(5, 11, BlockType.AIR);
+    map.setBlock(6, 11, BlockType.AIR);
+    map.setBlock(7, 11, BlockType.AIR);
+    map.setBlock(8, 11, BlockType.AIR);
+    map.setBlock(9, 11, BlockType.AIR);
+    map.setBlock(10, 11, BlockType.AIR);
+    map.setBlock(11, 11, BlockType.AIR);
+    map.setBlock(12, 11, BlockType.AIR);
+    map.setBlock(13, 11, BlockType.AIR);
+    map.setBlock(14, 11, BlockType.AIR);
+    map.setBlock(15, 11, BlockType.AIR);
+    map.setBlock(16, 11, BlockType.AIR);
+
+    map.setBlock(2, 12, BlockType.AIR);
+    map.setBlock(7, 12, BlockType.AIR);
+    map.setBlock(8, 12, BlockType.AIR);
+    map.setBlock(9, 12, BlockType.AIR);
+    map.setBlock(13, 12, BlockType.AIR);
+    map.setBlock(14, 12, BlockType.AIR);
+
+    map.setBlock(2, 13, BlockType.AIR);
+    map.setBlock(13, 13, BlockType.AIR);
+    map.setBlock(14, 13, BlockType.AIR);
+
+    map.setBlock(2, 14, BlockType.AIR);
+    map.setBlock(12, 14, BlockType.GOAL_GREEN);
+    map.setBlock(13, 14, BlockType.AIR);
+    map.setBlock(14, 14, BlockType.AIR);
+
+    map.setBlock(0, 15, BlockType.AIR);
+    map.setBlock(1, 15, BlockType.AIR);
+    map.setBlock(2, 15, BlockType.AIR);
+    map.setBlock(12, 15, BlockType.AIR);
+    map.setBlock(13, 15, BlockType.AIR);
+    map.setBlock(14, 15, BlockType.AIR);
+
+    map.setBlock(0, 16, BlockType.GOAL_BLUE);
+    map.setBlock(1, 16, BlockType.AIR);
+    map.setBlock(2, 16, BlockType.AIR);
+    map.setBlock(12, 16, BlockType.AIR);
+    map.setBlock(13, 16, BlockType.AIR);
+    map.setBlock(14, 16, BlockType.AIR);
 
     return map;
   }
@@ -202,6 +295,36 @@ export class GameBlob {
         break;
       case BlockType.COLOR_CHANGE_BLUE:
         this.color = COLORS.BLUE;
+        break;
+      case BlockType.GOAL_BLUE:
+        if (this.color === COLORS.BLUE) {
+          this.state = "dead";
+        }
+        break;
+      case BlockType.GOAL_RED:
+        if (this.color === COLORS.RED) {
+          this.state = "dead";
+        }
+        break;
+      case BlockType.GOAL_YELLOW:
+        if (this.color === COLORS.YELLOW) {
+          this.state = "dead";
+        }
+        break;
+      case BlockType.GOAL_PURPLE:
+        if (this.color === COLORS.PURPLE) {
+          this.state = "dead";
+        }
+        break;
+      case BlockType.GOAL_ORANGE:
+        if (this.color === COLORS.ORANGE) {
+          this.state = "dead";
+        }
+        break;
+      case BlockType.GOAL_GREEN:
+        if (this.color === COLORS.GREEN) {
+          this.state = "dead";
+        }
         break;
       default:
         exhaust(block);
