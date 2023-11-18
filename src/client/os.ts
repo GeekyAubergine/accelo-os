@@ -27,6 +27,32 @@ const states: OsState[] = [
     name: "Files",
     options: [
       {
+        name: "List",
+        color: COLORS.GREEN,
+      },
+      {
+        name: "Search",
+        color: COLORS.BLUE,
+      },
+      {
+        name: "Main",
+        color: COLORS.PURPLE,
+      },
+    ],
+  },
+  {
+    name: "List",
+    options: [
+      {
+        name: "Main",
+        color: COLORS.PURPLE,
+      },
+    ],
+  },
+  {
+    name: "Search",
+    options: [
+      {
         name: "Main",
         color: COLORS.PURPLE,
       },
@@ -34,6 +60,32 @@ const states: OsState[] = [
   },
   {
     name: "Email",
+    options: [
+      {
+        name: "Inbox",
+        color: COLORS.RED,
+      },
+      {
+        name: "New",
+        color: COLORS.YELLOW,
+      },
+      {
+        name: "Main",
+        color: COLORS.PURPLE,
+      },
+    ],
+  },
+  {
+    name: "Inbox",
+    options: [
+      {
+        name: "Main",
+        color: COLORS.PURPLE,
+      },
+    ],
+  },
+  {
+    name: "New",
     options: [
       {
         name: "Main",

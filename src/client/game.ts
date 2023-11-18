@@ -137,7 +137,7 @@ export class Map {
     map.setBlock(1, 0, BlockType.AIR);
     map.setBlock(2, 0, BlockType.AIR);
     map.setBlock(12, 0, BlockType.AIR);
-    map.setBlock(13, 0, BlockType.AIR);
+    map.setBlock(13, 0, BlockType.GOAL_ORANGE);
     map.setBlock(14, 0, BlockType.AIR);
 
     map.setBlock(0, 1, BlockType.AIR);
@@ -150,7 +150,7 @@ export class Map {
     map.setBlock(0, 2, BlockType.GOAL_PURPLE);
     map.setBlock(2, 2, BlockType.AIR);
     map.setBlock(12, 2, BlockType.AIR);
-    map.setBlock(13, 2, BlockType.GOAL_ORANGE);
+    map.setBlock(13, 2, BlockType.AIR);
     map.setBlock(14, 2, BlockType.AIR);
     map.setBlock(15, 2, BlockType.AIR);
 
