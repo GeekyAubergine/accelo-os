@@ -124,8 +124,8 @@ function tick() {
     forceY += 10;
   }
 
-  // game.setGravity(new Vec2(forceX, forceY));
-  game.setGravity(new Vec2(gyro.y, gyro.x));
+  game.setGravity(new Vec2(forceX, forceY));
+  // game.setGravity(new Vec2(gyro.y, gyro.x));
 
   // if (socketOpen) {
   //   socket.send(JSON.stringify({ forceX, forceY }));

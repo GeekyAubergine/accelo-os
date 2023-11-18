@@ -82,6 +82,7 @@ export class Renderer {
 
     switch (blockType) {
       case BlockType.VOID:
+        ctx.fillStyle = "#aaaaaa";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
       case BlockType.AIR:
@@ -125,6 +126,24 @@ export class Renderer {
         ctx.fillStyle = "#aaaaaa";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         ctx.fillStyle = COLORS.BLUE.asHex();
+        // Circle
+        ctx.beginPath();
+        ctx.arc(BLOCK_SIZE / 2, BLOCK_SIZE / 2, BLOCK_SIZE / 2, 0, 2 * Math.PI);
+        ctx.fill();
+        break;
+      case BlockType.COLOR_CHANGE_RED:
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        ctx.fillStyle = COLORS.RED.asHex();
+        // Circle
+        ctx.beginPath();
+        ctx.arc(BLOCK_SIZE / 2, BLOCK_SIZE / 2, BLOCK_SIZE / 2, 0, 2 * Math.PI);
+        ctx.fill();
+        break;
+      case BlockType.COLOR_CHANGE_YELLOW:
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        ctx.fillStyle = COLORS.YELLOW.asHex();
         // Circle
         ctx.beginPath();
         ctx.arc(BLOCK_SIZE / 2, BLOCK_SIZE / 2, BLOCK_SIZE / 2, 0, 2 * Math.PI);

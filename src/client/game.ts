@@ -47,8 +47,8 @@ export const COLORS = {
   BLUE: new Color(0.3, 0.3, 0.9),
   PURPLE: new Color(0.7, 0.3, 0.7),
   GREEN: new Color(0.3, 0.7, 0.3),
-  YELLOW: new Color(0.7, 0.7, 0.3),
-  ORANGE: new Color(0.7, 0.5, 0.3),
+  YELLOW: new Color(0.9, 0.9, 0.3),
+  ORANGE: new Color(0.9, 0.6, 0.2),
 };
 
 export class Vec2 {
@@ -101,6 +101,8 @@ export const BlockType = {
   GOAL_ORANGE: 8,
   GOAL_GREEN: 9,
   COLOR_CHANGE_BLUE: 10,
+  COLOR_CHANGE_RED: 11,
+  COLOR_CHANGE_YELLOW: 12,
 } as const;
 export type BlockType = (typeof BlockType)[keyof typeof BlockType];
 
@@ -127,37 +129,65 @@ export class Map {
     map.setBlock(0, 0, BlockType.AIR);
     map.setBlock(1, 0, BlockType.AIR);
     map.setBlock(2, 0, BlockType.AIR);
+    map.setBlock(12, 0, BlockType.AIR);
+    map.setBlock(13, 0, BlockType.AIR);
+    map.setBlock(14, 0, BlockType.AIR);
 
     map.setBlock(0, 1, BlockType.AIR);
     map.setBlock(1, 1, BlockType.AIR);
     map.setBlock(2, 1, BlockType.AIR);
+    map.setBlock(12, 1, BlockType.AIR);
+    map.setBlock(13, 1, BlockType.AIR);
+    map.setBlock(14, 1, BlockType.AIR);
 
     map.setBlock(0, 2, BlockType.GOAL_PURPLE);
     map.setBlock(2, 2, BlockType.AIR);
+    map.setBlock(12,2, BlockType.AIR);
+    map.setBlock(13, 2, BlockType.GOAL_ORANGE);
+    map.setBlock(14, 2, BlockType.AIR);
+    map.setBlock(15, 2, BlockType.AIR);
 
     map.setBlock(2, 3, BlockType.AIR);
-
     map.setBlock(5, 3, BlockType.GOAL_RED);
+    map.setBlock(15, 3, BlockType.AIR);
 
     map.setBlock(2, 4, BlockType.AIR);
+    map.setBlock(6, 4, BlockType.AIR);
+    map.setBlock(5, 4, BlockType.AIR);
+    map.setBlock(15, 4, BlockType.AIR);
 
     map.setBlock(0, 5, BlockType.AIR);
     map.setBlock(1, 5, BlockType.AIR);
     map.setBlock(2, 5, BlockType.AIR);
+    map.setBlock(5, 5, BlockType.COLOR_CHANGE_YELLOW);
+    map.setBlock(6, 5, BlockType.AIR);
+    map.setBlock(15, 5, BlockType.AIR);
 
     map.setBlock(2, 6, BlockType.AIR);
+    map.setBlock(6, 6, BlockType.AIR);
+    map.setBlock(10, 6, BlockType.AIR);
+    map.setBlock(11, 6, BlockType.AIR);
+    map.setBlock(12, 6, BlockType.AIR);
+    map.setBlock(13, 6, BlockType.AIR);
+    map.setBlock(14, 6, BlockType.AIR);
+    map.setBlock(15, 6, BlockType.AIR);
+
     map.setBlock(2, 7, BlockType.AIR);
+    map.setBlock(6, 7, BlockType.AIR);
+    map.setBlock(10, 7, BlockType.AIR);
+    map.setBlock(15, 7, BlockType.GOAL_YELLOW);
 
     map.setBlock(2, 8, BlockType.AIR);
+    map.setBlock(6, 8, BlockType.AIR);
     map.setBlock(8, 8, BlockType.AIR);
     map.setBlock(9, 8, BlockType.AIR);
     map.setBlock(10, 8, BlockType.AIR);
     map.setBlock(11, 8, BlockType.AIR);
-
     map.setBlock(12, 8, BlockType.COLOR_CHANGE_BLUE);
 
     map.setBlock(2, 9, BlockType.AIR);
     map.setBlock(7, 9, BlockType.AIR);
+    map.setBlock(6, 9, BlockType.AIR);
     map.setBlock(8, 9, BlockType.AIR);
     map.setBlock(9, 9, BlockType.AIR);
 
@@ -204,7 +234,7 @@ export class Map {
     map.setBlock(1, 15, BlockType.AIR);
     map.setBlock(2, 15, BlockType.AIR);
     map.setBlock(12, 15, BlockType.AIR);
-    map.setBlock(13, 15, BlockType.AIR);
+    map.setBlock(13, 15, BlockType.COLOR_CHANGE_RED);
     map.setBlock(14, 15, BlockType.AIR);
 
     map.setBlock(0, 16, BlockType.GOAL_BLUE);
@@ -218,12 +248,20 @@ export class Map {
   }
 
   getBlock(x: number, y: number): BlockType {
-    return this.blocks[y * this.width + x];
+    return this.blocks[y * this.width + x] ?? BlockType.VOID;
   }
 
   getBlockAt(pos: Vec2): BlockType {
+    console.log({ pos });
+
     const x = Math.floor(pos.x / BLOCK_SIZE);
     const y = Math.floor(pos.y / BLOCK_SIZE);
+
+    if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
+      return BlockType.VOID;
+    }
+
+    console.log({ x, y });
 
     return this.getBlock(x, y) ?? BlockType.VOID;
   }
@@ -295,9 +333,6 @@ export class GameBlob {
           break;
         case BlockType.SPLITTER:
           break;
-        case BlockType.COLOR_CHANGE_BLUE:
-          this.color = COLORS.BLUE;
-          break;
         case BlockType.GOAL_BLUE:
           if (this.color === COLORS.BLUE) {
             this.state = "dead";
@@ -328,6 +363,15 @@ export class GameBlob {
             this.state = "dead";
           }
           break;
+        case BlockType.COLOR_CHANGE_BLUE:
+          this.color = COLORS.BLUE;
+          break;
+        case BlockType.COLOR_CHANGE_RED:
+          this.color = COLORS.RED;
+          break;
+        case BlockType.COLOR_CHANGE_YELLOW:
+          this.color = COLORS.YELLOW;
+          break;
         default:
           exhaust(block);
       }
@@ -337,31 +381,31 @@ export class GameBlob {
         return;
       }
 
-      console.log(block);
-
       const nextPos = this.pos.add(this.vel.scale(dt / SUBSTEPS));
 
       const top = map.getBlockAt(nextPos.add(new Vec2(0, -this.radius + 1)));
 
-      if (top === BlockType.VOID || top === BlockType.WALL) {
+      if (top === BlockType.WALL) {
         this.vel = new Vec2(this.vel.x, Math.max(0, this.vel.y));
       }
 
       const bottom = map.getBlockAt(nextPos.add(new Vec2(0, this.radius - 1)));
 
-      if (bottom === BlockType.VOID || bottom === BlockType.WALL) {
+      if (bottom === BlockType.WALL) {
         this.vel = new Vec2(this.vel.x, Math.min(0, this.vel.y));
       }
 
       const left = map.getBlockAt(nextPos.add(new Vec2(-this.radius + 1, 0)));
 
-      if (left === BlockType.VOID || left === BlockType.WALL) {
+      console.log({ left });
+
+      if (left === BlockType.WALL) {
         this.vel = new Vec2(Math.max(0, this.vel.x), this.vel.y);
       }
 
       const right = map.getBlockAt(nextPos.add(new Vec2(this.radius - 1, 0)));
 
-      if (right === BlockType.VOID || right === BlockType.WALL) {
+      if (right === BlockType.WALL) {
         this.vel = new Vec2(Math.min(0, this.vel.x), this.vel.y);
       }
 
