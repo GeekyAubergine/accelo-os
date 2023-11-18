@@ -1,4 +1,7 @@
+import { exhaust } from "./core";
+
 export const FRICTION = 0.01;
+export const WALL_FRICTION = 0.05;
 export const BLOCK_SIZE = 24;
 
 export class Color {
@@ -13,9 +16,11 @@ export class Color {
   }
 
   asHex(): string {
-    return `#${(this.r * 255).toString(16)}${(this.g * 255).toString(16)}${(
-      this.b * 255
-    ).toString(16)}`;
+    const r = Math.floor(this.r * 255);
+    const g = Math.floor(this.g * 255);
+    const b = Math.floor(this.b * 255);
+
+    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;
   }
 
   combine(other: Color): Color {
@@ -34,6 +39,12 @@ export class Color {
     );
   }
 }
+
+export const COLORS = {
+  WHITE: new Color(1, 1, 1),
+  RED: new Color(1, 0.2, 0.2),
+  BLUE: new Color(0.3, 0.3, 0.9),
+};
 
 export class Vec2 {
   readonly x: number;
@@ -78,6 +89,7 @@ export const BlockType = {
   WALL: 1,
   AIR: 2,
   SPLITTER: 3,
+  COLOR_CHANGE_BLUE: 4,
 } as const;
 export type BlockType = (typeof BlockType)[keyof typeof BlockType];
 
@@ -102,6 +114,11 @@ export class Map {
     const map = new Map(17, 17);
 
     map.setBlock(8, 8, BlockType.AIR);
+    map.setBlock(9, 8, BlockType.AIR);
+    map.setBlock(10, 8, BlockType.AIR);
+    map.setBlock(11, 8, BlockType.AIR);
+
+    map.setBlock(12, 8, BlockType.COLOR_CHANGE_BLUE);
 
     return map;
   }
@@ -174,6 +191,22 @@ export class GameBlob {
 
     const block = map.getBlockAt(this.pos);
 
+    switch (block) {
+      case BlockType.VOID:
+      case BlockType.WALL:
+        this.state = "dead";
+        break;
+      case BlockType.AIR:
+        break;
+      case BlockType.SPLITTER:
+        break;
+      case BlockType.COLOR_CHANGE_BLUE:
+        this.color = COLORS.BLUE;
+        break;
+      default:
+        exhaust(block);
+    }
+
     if (block === BlockType.VOID || block === BlockType.WALL) {
       this.state = "dead";
       return;
@@ -188,7 +221,7 @@ export class GameBlob {
     );
 
     if (topBlock === BlockType.WALL) {
-      this.vel = new Vec2(this.vel.x, 0);
+      this.vel = new Vec2(this.vel.x * (1 - WALL_FRICTION), 0);
     }
 
     const bottomBlock = map.getBlockAt(
@@ -196,7 +229,7 @@ export class GameBlob {
     );
 
     if (bottomBlock === BlockType.WALL) {
-      this.vel = new Vec2(this.vel.x, 0);
+      this.vel = new Vec2(this.vel.x * (1 - WALL_FRICTION), 0);
     }
 
     const leftBlock = map.getBlockAt(
@@ -204,7 +237,7 @@ export class GameBlob {
     );
 
     if (leftBlock === BlockType.WALL) {
-      this.vel = new Vec2(0, this.vel.y);
+      this.vel = new Vec2(0, this.vel.y * (1 - WALL_FRICTION));
     }
 
     const rightBlock = map.getBlockAt(
@@ -212,7 +245,7 @@ export class GameBlob {
     );
 
     if (rightBlock === BlockType.WALL) {
-      this.vel = new Vec2(0, this.vel.y);
+      this.vel = new Vec2(0, this.vel.y * (1 - WALL_FRICTION));
     }
 
     this.pos = this.pos.add(this.vel.scale(dt));
@@ -227,7 +260,7 @@ export class GameBlob {
         (map.getHeight() * BLOCK_SIZE) / 2
       ),
       BLOCK_SIZE * 0.4,
-      new Color(1, 1, 1)
+      COLORS.WHITE
     );
   }
 

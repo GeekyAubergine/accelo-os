@@ -1,5 +1,12 @@
 import { Block } from "typescript";
-import { GameBlob as GameBlob, Game, Map, BlockType, BLOCK_SIZE } from "./game";
+import {
+  GameBlob as GameBlob,
+  Game,
+  Map,
+  BlockType,
+  BLOCK_SIZE,
+  COLORS,
+} from "./game";
 import { exhaust } from "./core";
 
 export class Renderer {
@@ -89,6 +96,10 @@ export class Renderer {
         ctx.fillStyle = "red";
         ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
         break;
+      case BlockType.COLOR_CHANGE_BLUE:
+        ctx.fillStyle = COLORS.BLUE.asHex();
+        ctx.fillRect(0, 0, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+        break;
       default:
         exhaust(blockType);
     }
@@ -102,9 +113,11 @@ export class Renderer {
     const color = blob.getColor().asHex();
 
     ctx.fillStyle = color;
+    ctx.strokeStyle = 'black';
 
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, radius, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.stroke();
   }
 }
