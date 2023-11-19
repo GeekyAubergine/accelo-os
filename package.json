@@ -6,7 +6,7 @@
   "scripts": {
     "dev:client": "vite",
     "dev:server": "bun run src/server/index.ts --watch",
-    "build:client": "tsc && vite build --host",
+    "build:client": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
